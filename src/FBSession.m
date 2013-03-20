@@ -40,6 +40,8 @@
 #define TEST_DISABLE_MULTITASKING_LOGIN NO
 #define TEST_DISABLE_FACEBOOKLOGIN NO
 
+#define DISABLE_SAFARI_AUTH YES
+
 // const strings
 static NSString *const FBPLISTAppIDKey = @"FacebookAppID";
 static NSString *const FBPLISTUrlSchemeSuffixKey = @"FacebookUrlSchemeSuffix";
@@ -847,7 +849,9 @@ static FBSession *g_activeSession = nil;
                         behavior:(FBSessionLoginBehavior)behavior
                  defaultAudience:(FBSessionDefaultAudience)audience
                    isReauthorize:(BOOL)isReauthorize {
-    BOOL tryIntegratedAuth = behavior == FBSessionLoginBehaviorUseSystemAccountIfPresent;
+    BOOL tryIntegratedAuth = (behavior == FBSessionLoginBehaviorUseSystemAccountIfPresent) ||
+                            (behavior == FBSessionLoginBehaviorWithFallbackToWebView) ||
+                            (behavior == FBSessionLoginBehaviorWithNoFallbackToWebView);
     BOOL tryFacebookLogin = (behavior == FBSessionLoginBehaviorUseSystemAccountIfPresent) ||
                             (behavior == FBSessionLoginBehaviorWithFallbackToWebView) ||
                             (behavior == FBSessionLoginBehaviorWithNoFallbackToWebView);
@@ -870,6 +874,7 @@ static FBSession *g_activeSession = nil;
                       safariAuth:(BOOL)trySafariAuth 
                         fallback:(BOOL)tryFallback
                    isReauthorize:(BOOL)isReauthorize {
+    trySafariAuth = trySafariAuth && !DISABLE_SAFARI_AUTH;
     // setup parameters for either the safari or inline login
     NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                    self.appID, FBLoginUXClientID,
